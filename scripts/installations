@@ -37,7 +37,6 @@ install_package() {
 
 install_package "/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"" "Homebrew" 0
 install_package "git" "Git" 1
-install_package "podman" "Podman" 1
 install_package "wget" "Wget" 1
 install_package "curl" "Curl" 1
 install_package "bat" "Bat" 1
