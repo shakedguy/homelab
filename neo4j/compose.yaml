@@ -1,0 +1,20 @@
+
+services:
+  server:
+    image: neo4j:latest
+    restart: unless-stopped
+    container_name: neo4j
+    expose:
+      - 7474
+      - 7687
+    ports:
+      - 7474:7474
+      - 7687:7687
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS='["graph-data-science"]'
+      - NEO4J_PLUGINS='["apoc","gds"]'
+    volumes:
+      - ../volumes/neo4j/db/data:/data
+      - ../volumes/neo4j/db/conf:/conf
+      - ../volumes/neo4j/db/plugins:/plugins

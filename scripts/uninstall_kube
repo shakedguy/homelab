@@ -1,0 +1,24 @@
+#!/bin/bash
+
+
+sudo apt-get purge -y kubeadm kubectl kubelet kubernetes-cni docker-ce docker-ce-cli containerd.io containerd
+sudo apt-get autoremove -y
+sudo rm -rf /etc/kubernetes /var/lib/kubelet /var/lib/etcd /var/lib/cni /etc/cni/net.d
+sudo rm -rf /var/lib/docker /var/lib/containerd
+sudo rm -rf /etc/apt/sources.list.d/kubernetes.list
+sudo rm -rf /etc/apt/sources.list.d/docker.list
+sudo rm -rf /etc/apt/keyrings/kubernetes-apt-keyring.asc
+sudo rm -rf /etc/apt/keyrings/docker.asc
+sudo systemctl stop docker
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+sudo apt-get purge -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt-get purge -y docker docker-engine docker.io containerd runc
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /etc/docker
+sudo rm -rf /etc/systemd/system/docker.service
+sudo rm -rf /etc/systemd/system/docker.socket
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+sudo rm -f /usr/local/bin/docker*
+sudo apt update -y

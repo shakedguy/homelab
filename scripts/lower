@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+set -e
+set -o pipefail
+
+if [ -t 0 ]; then
+    echo "$@" | tr '[:upper:]' '[:lower:]'
+else
+    cat | tr '[:upper:]' '[:lower:]'
+fi

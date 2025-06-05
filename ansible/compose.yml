@@ -1,0 +1,47 @@
+
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgres:14
+    container_name: ansible-db
+    hostname: postgres
+    volumes: 
+     - ./db:/var/lib/postgresql/data
+    environment:
+     POSTGRES_USER: semaphore
+     POSTGRES_PASSWORD: semaphore
+     POSTGRES_DB: semaphore
+  semaphore:
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    image: semaphoreui/semaphore:latest
+    container_name: ansible-semaphore
+    volumes:
+      - ../volumes/ansible/inventory.ini/:/inventory:ro
+      - ../volumes/ansible/config/:/etc/semaphore:rw
+    environment:
+      SEMAPHORE_DB_USER: semaphore
+      SEMAPHORE_DB_PASS: semaphore
+      SEMAPHORE_DB_HOST: postgres 
+      SEMAPHORE_DB_PORT: 5432
+      SEMAPHORE_DB_DIALECT: postgres 
+      SEMAPHORE_DB: semaphore
+      SEMAPHORE_PLAYBOOK_PATH: /tmp/semaphore/
+      SEMAPHORE_ADMIN_PASSWORD: '031294'
+      SEMAPHORE_ADMIN_NAME: guysha
+      SEMAPHORE_ADMIN_EMAIL: dev.shakedguy@gmail.com
+      SEMAPHORE_ADMIN: guysha
+      SEMAPHORE_ACCESS_KEY_ENCRYPTION: 'pns31dcV0kWxSiZk/iOIZdoSFYaJTqfrr8UyeulF2Zc='
+      SEMAPHORE_LDAP_ACTIVATED: 'no'
+      SEMAPHORE_LDAP_HOST: dc01.local.example.com
+      SEMAPHORE_LDAP_PORT: '636'
+      SEMAPHORE_LDAP_NEEDTLS: 'yes'
+      SEMAPHORE_LDAP_DN_BIND: 'uid=bind_user,cn=users,cn=accounts,dc=local,dc=shiftsystems,dc=net'
+      SEMAPHORE_LDAP_PASSWORD: 'ldap_bind_account_password'
+      SEMAPHORE_LDAP_DN_SEARCH: 'dc=local,dc=example,dc=com'
+      SEMAPHORE_LDAP_SEARCH_FILTER: "(\u0026(uid=%s)(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=local,dc=example,dc=com))"
+      TZ: UTC
+    depends_on:
+      - postgres
+

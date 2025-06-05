@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+days="30"
+dir_path=$1
+
+############################################################
+# Help                                                     #
+############################################################
+Help() {
+  # Display Help
+  echo
+  echo "Delete old files by modify time script."
+  echo
+  echo "Syntax: scriptTemplate [-d|h|v|]"
+  echo "options:"
+  echo "d     Specify max days. [default is +30]"
+  echo "h     Print this Help."
+  echo "v     Verbose mode."
+  echo
+}
+
+############################################################
+############################################################
+# Main program                                             #
+############################################################
+############################################################
+############################################################
+# Process the input options. Add options as needed.        #
+############################################################
+
+if [[ -n ${1+set}] && [$1 != *"-"* ]]; then
+  dir_path="${1}"
+
+  if [[ -n ${2+set} ]]; then
+    shift 1
+  fi
+
+fi
+
+while getopts ":vd:h" option; do
+  case $option in
+
+  h) # display Help
+    Help
+    exit
+    ;;
+
+  v) # set verbose mode
+    set -v ;;
+
+  d) # set db name
+    days=$OPTARG ;;
+
+  \?) # Invalid option
+    echo "Error: invalid option: -$OPTARG" 1>&2
+    exit
+    ;;
+  esac
+
+done
+
+if [ -z "${dir_path}" ]; then
+  echo "You must supply a directory path, example: /var/lib/pg_backup"
+  exit 1
+fi
+
+if [[ ${days} != *"-"* ]] && [[ ${days} != *"+"* ]]; then
+  days="+${days}"
+fi
+
+find $dir_path -type f -mtime $days -delete >/dev/null 2>&1

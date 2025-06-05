@@ -1,0 +1,182 @@
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+#source /opt/homebrew/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+
+# history setup
+COMPOSE_BAKE=true
+HISTFILE=$HOME/.zhistory
+SAVEHIST=1000
+HISTSIZE=999
+setopt share_history
+setopt hist_expire_dups_first
+setopt hist_ignore_dups
+setopt hist_verify
+
+# completion using arrow keys (based on history)
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=180'
+
+source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+bindkey              '^I'         menu-complete
+bindkey "$terminfo[kcbt]" reverse-menu-complete
+
+# ---- Eza (better ls) -----
+alias ls="eza --color=always --long --icons=always --no-user --no-permissions --sort=created"
+alias python="python3"
+alias pip="pip3"
+alias pg16_start="brew services start postgresql@16"
+alias pg16_stop="brew services stop postgresql@16"
+alias pg16_restart="brew services restart postgresql@16"
+alias pg14_start="brew services start postgresql@14"
+alias pg14_stop="brew services stop postgresql@14"
+alias pg14_restart="brew services restart postgresql@14"
+alias redis_start="redis-stack-server --daemonize yes"
+alias redis_stop="redis-cli shutdown"
+alias pass="openssl rand -hex"
+alias k="kubectl"
+alias text="open -a TextEdit"
+alias profile="open -a TextEdit ~/.zshrc"
+alias port="lsof -i"
+alias buzzer="cd ~/Desktop/dev/buzzer"
+alias d="docker --context=desktop-linux"
+alias cd="z"
+alias res_now="sudo shutdown -r now"
+alias res="sudo shutdown -r"
+alias ksw="kubectl config use-context"
+alias refresh="source ~/.zshrc"
+alias kcx="kubectl config current-context"
+alias calc="numi-cli"
+alias pgadmin_upgrade="brew upgrade --cask pgadmin4"
+alias appoint="cd $HOME/Desktop/dev/appoint"
+alias buzzer="cd $HOME/Desktop/dev/buzzer"
+alias rmr="rm -r"
+alias cpr="cp -r"
+
+eval "$(zoxide init zsh)"
+eval "$(fzf --zsh)"
+
+export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+export LIBTORCH_HOME=~/libtorch
+export CMAKE_PREFIX_PATH=${LIBTORCH_HOME}
+export PATH="/usr/local/google-cloud-sdk/bin:$PATH"
+export MD_APPLE_SDK_ROOT=/Applications/Xcode.app/
+export PATH=$HOME/.npm-global/bin:$PATH
+
+
+# Use fd (https://github.com/sharkdp/fd) for listing path candidates.
+# - The first argument to the function ($1) is the base path to start traversal
+# - See the source code (completion.{bash,zsh}) for the details.
+_fzf_compgen_path() {
+  fd --hidden --exclude .git . "$1"
+}
+
+# Use fd to generate the list for directory completion
+_fzf_compgen_dir() {
+  fd --type=d --hidden --exclude .git . "$1"
+}
+
+export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
+
+# Advanced customization of fzf options via _fzf_comprun function
+# - The first argument to the function is the name of the command.
+# - You should make sure to pass the rest of the arguments to fzf.
+fzf_comprun() {
+  local command=$1
+  shift
+
+  case "$command" in
+    cd)           fzf --preview 'eza --tree --color=always {} | head -200' "$@" ;;
+    export|unset) fzf --preview "eval 'echo $'{}"         "$@" ;;
+    ssh)          fzf --preview 'dig {}'                   "$@" ;;
+    *)            fzf --preview "bat -n --color=always --line-range :500 {}" "$@" ;;
+  esac
+}
+
+# --- setup fzf theme ---
+fg="#CBE0F0"
+bg="#011628"
+bg_highlight="#143652"
+purple="#B388FF"
+blue="#06BCE4"
+cyan="#2CF9ED"
+
+export FZF_DEFAULT_OPTS="--color=fg:${fg},bg:${bg},hl:${purple},fg+:${fg},bg+:${bg_highlight},hl+:${purple},info:${blue},prompt:${cyan},pointer:${cyan},marker:${cyan},spinner:${cyan},header:${cyan}"
+
+# ----- Bat (better cat) -----
+
+export BAT_THEME="tokyonight_night"
+
+export PATH="/Users/guysha/.rbenv/versions/3.3.3/bin:$PATH"
+#export PATH="/Users/guysha/.rbenv/versions/3.3.4/bin:$PATH"
+#export PATH="/Users/guysha/.rbenv/versions/3.2.2/bin:$PATH"
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+export PATH="/Users/guysha/.local/bin:$PATH"
+export PATH="/usr/local/share/dotnet:$PATH"
+export PATH="/Users/guysha/Desktop/dev/scripts/bin:$PATH"
+export PATH="/Users/guysha/Desktop/dev/scripts/bin/.venv/bin:$PATH"
+export PATH="/Users/guysha/Applications/mongosh/bin:$PATH"
+export EDITOR="code --wait"
+
+
+
+KUBECONFIG=~/.kube/config
+
+FASTLANE_GEM_HOME=${HOME}/.local/share/fastlane/3.4.0
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export PATH=$JAVA_HOME/bin:$PATH
+export PATH="$HOME/.local/share/fastlane/3.4.0/bin:$PATH"
+export PATH="/opt/homebrew/bin:$PATH"
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH="$ANDROID_HOME/emulator:$PATH"
+export PATH="$ANDROID_HOME/platform-tools:$PATH"
+export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
+export CFLAGS="-std=c++11 -Wno-error=deprecated-declarations"
+export CXXFLAGS="-std=c++11"
+export CC=clang
+export CXX=clang++
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+export ANSIBLE_CONFIG="/Users/guysha/.ansible/ansible.cfg"
+
+alias ip_info="/Users/guysha/Desktop/dev/scripts/bin/.venv/bin/python /Users/guysha/Desktop/dev/scripts/bin/ip_info.py"
+
+export PYTHON=/Library/Frameworks/Python.framework/Versions/Current/bin/python3
+
+alias trename="tmux select-pane -T"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:$PATH"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/guysha/.lmstudio/bin"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/guysha/.docker/completions $fpath)
+if [ -d /opt/homebrew/share/zsh/site-functions ]; then
+  fpath+=/opt/homebrew/share/zsh/site-functions
+fi
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
+
+# pnpm
+export PNPM_HOME="/Users/guysha/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+PATH=~/.console-ninja/.bin:$PATH

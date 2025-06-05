@@ -1,0 +1,23 @@
+---
+- name: Check if system reboot is required and send Telegram message
+  hosts: all
+  become: true
+  tasks:
+  - name: Check if system reboot is required
+    stat:
+      path: /var/run/reboot-required
+    register: reboot_required
+
+  - name: Send Telegram message
+    ansible.builtin.uri:
+      url: "https://api.telegram.org/bot{{telegram_bot_token}}/sendMessage"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+      body: >
+        {
+          "chat_id": "{{telegram_chat_id}}",
+          "text": "{{ inventory_hostname }} needs reboot"
+        }
+      body_format: json
+    when: reboot_required.stat.exists

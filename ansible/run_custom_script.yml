@@ -1,0 +1,16 @@
+- name: Run bash script on all remote servers
+  hosts: kfir_prod
+  become: true
+  tasks:
+  # - name: Copy script to remote server
+  #   ansible.builtin.copy:
+  #     src: ../scripts/install_kube
+  #     dest: /root/install_kube
+  #     mode: '0755'
+
+    - name: Execute the script
+      ansible.builtin.command: >
+        kubeadm join 89.38.128.101:6443
+        --token b2onrv.iijbvipaqurlatn3
+        --discovery-token-ca-cert-hash sha256:1b961e8cfb0467af6cf5ab1d387b35e0af327d2fa29b50599b3cad3435bf8a83
+      changed_when: false

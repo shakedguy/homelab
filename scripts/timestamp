@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+set -e
+set -o pipefail
+
+timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+
+echo $timestamp

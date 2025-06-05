@@ -1,0 +1,11 @@
+---
+- name: Test Ansible connectivity and execute a simple task
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: Test connection to hosts
+      ansible.builtin.ping:
+      register: ping_result
+    - name: Print the result of the ping task
+      ansible.builtin.debug:
+        var: ping_result

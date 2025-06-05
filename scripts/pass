@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+# Defaults
+LENGTH=16
+SYMBOLS=false
+ENCODING="ascii"
+CASE=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --symbols|-s)
+            SYMBOLS=true
+            shift
+            ;;
+        -hex)
+            ENCODING="hex"
+            shift
+            ;;
+        -base64)
+            ENCODING="base64"
+            shift
+            ;;
+        -ascii)
+            ENCODING="ascii"
+            shift
+            ;;
+        --case|-c)
+            case "$2" in
+                upper|U)
+                    CASE="UPPER"
+                    ;;
+                lower|L)
+                    CASE="LOWER"
+                    ;;
+                *)
+                    echo "Invalid case option: $2. Use 'upper' or 'lower'." >&2
+                    exit 1
+                    ;;
+            esac
+            shift 2
+            ;;
+        [0-9]*)
+            LENGTH="$1"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Character set
+charset='A-Za-z0-9'
+if [ "$SYMBOLS" = true ]; then
+    charset+='!@#$%^&*()_+{}|:<>?=[]\;,./~`-'
+fi
+
+# Generate random string
+pass=$(LC_ALL=C tr -dc "$charset" < /dev/urandom | head -c "$LENGTH")
+
+# Apply encoding
+case "$ENCODING" in
+    hex)
+        pass=$(echo -n "$pass" | xxd -p | tr -d '\n')
+        ;;
+    base64)
+        pass=$(echo -n "$pass" | base64 | tr -d '\n' | head -c "$LENGTH")
+        ;;
+    ascii)
+        : # no-op
+        ;;
+    *)
+        echo "Unsupported encoding: $ENCODING" >&2
+        exit 1
+        ;;
+esac
+
+# Apply case
+if [[ "$CASE" == "UPPER" ]]; then
+    pass=$(echo "$pass" | tr '[:lower:]' '[:upper:]')
+elif [[ "$CASE" == "LOWER" ]]; then
+    pass=$(echo "$pass" | tr '[:upper:]' '[:lower:]')
+fi
+
+echo "$pass"

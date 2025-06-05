@@ -1,0 +1,15 @@
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    expose:
+      - 5672
+      - 15672
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+      - ../volumes/rabbitmq/db:/var/lib/rabbitmq/
+

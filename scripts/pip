@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+set -e
+set -o pipefail
+
+ip=$(curl -s https://api.ipify.org)
+info=$(curl -s https://ipinfo.io/$ip)
+city=$(echo $info | jq -r '.city')
+country=$(echo $info | jq -r '.country')
+timezone=$(echo $info | jq -r '.timezone')
+echo $ip
+echo "$city, $country"
+echo $timezone
+

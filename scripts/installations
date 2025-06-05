@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+# This script installs packages to MacOS.
+set -e
+set -o pipefail
+
+SKIP_ASK_PERMISSIONS=0
+# if -y is passed as an argument, skip asking for permissions
+if [[ "$1" == "-y" ]]; then
+    SKIP_ASK_PERMISSIONS=1
+fi
+
+
+# function that asks permissions to install packages if SKIP_ASK_PERMISSIONS is 0, otherwise installs packages without asking
+install_package() {
+    if [[ $SKIP_ASK_PERMISSIONS -eq 0 ]]; then
+        read -p "Do you want to install $2? [y/N] " -n 1 -r
+        echo    # move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            return
+        fi
+    fi
+    echo "Installing $1..."
+
+    if [ $3 -eq 1] ; then
+        brew install "$1"
+    else
+        eval "$1"
+    fi
+    
+}
+
+install_package "/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"" "Homebrew" 0
+install_package "git" "Git" 1
+install_package "podman" "Podman" 1
+install_package "wget" "Wget" 1
+install_package "curl" "Curl" 1
+install_package "bat" "Bat" 1
+install_package "jq" "JQ" 1
+install_package "tree" "Tree" 1
+install_package "eza" "Eza" 1
+install_package "overmind" "Overmind" 1
+install_package "fzf" "FZF" 1
+install_package "zoxide" "Zoxide" 1
+install_package "/bin/bash -c \"\$(curl -fsSL https://www.python.org/ftp/python/3.13.4/python-3.13.4-macos11.pkg)\"" "Python 3.13.4" 0
+install_package "pip3 install --upgrade pip" "PIP" 0
+
+

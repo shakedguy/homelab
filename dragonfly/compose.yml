@@ -1,0 +1,15 @@
+
+services:
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    container_name: dragonfly
+    command: dragonfly --logtostderr --cluster_mode=emulated --lock_on_hashtags
+    restart: unless-stopped
+    ulimits:
+      memlock: -1
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
+    volumes:
+      - ../volumes/dragonfly/db/data:/data

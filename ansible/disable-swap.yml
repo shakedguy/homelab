@@ -1,0 +1,24 @@
+---
+- name: Disable Swap
+  hosts: all
+  become: true
+  tasks:
+    - name: Disable swap temporarily
+      ansible.builtin.command:
+        cmd: swapoff -a
+        creates: /proc/swaps
+    - name: Remove swap entry from /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^.*\s+swap\s+.*$'
+        state: absent
+    - name: Disable swap permanently
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^.*\s+swap\s+.*$'
+        state: absent
+    - name: Reboot the system
+      ansible.builtin.reboot:
+        reboot_timeout: 400
+        msg: 'Rebooting the system to apply changes'
+        post_reboot_delay: 60

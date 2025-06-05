@@ -1,0 +1,15 @@
+services:
+  ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ubuntu
+    restart: unless-stopped
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    volumes:
+      - ../volumes/ubuntu/shared:/shared
+      - ../volumes/ubuntu/connect:/connect
+      - ../volumes/ubuntu/open_vpn:/open_vpn

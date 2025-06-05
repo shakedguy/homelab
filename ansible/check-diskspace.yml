@@ -1,0 +1,28 @@
+---
+- name: Check disk space available and send Telegram message if disk space is low
+  hosts: all
+  become: true
+  tasks:
+    - name: Get disk usage percentage
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          df -h / | awk 'NR==2 {print $5}' | tr -d '%'
+        executable: /bin/bash
+      register: disk_usage
+      changed_when: false
+      failed_when: disk_usage.rc != 0 or disk_usage.stdout is not match('^\\d+$')
+
+    - name: Send Telegram message if disk space is low
+      ansible.builtin.uri:
+        url: "https://api.telegram.org/bot{{ telegram_bot_token }}/sendMessage"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: >
+          {
+            "chat_id": "{{ telegram_chat_id }}",
+            "text": "{{ inventory_hostname }} has low disk space available: {{ disk_usage.stdout }}%"
+          }
+        body_format: json
+      when: disk_usage.stdout | int > 80
