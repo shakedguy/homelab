@@ -48,5 +48,6 @@ install_package "fzf" "FZF" 1
 install_package "zoxide" "Zoxide" 1
 install_package "/bin/bash -c \"\$(curl -fsSL https://www.python.org/ftp/python/3.13.4/python-3.13.4-macos11.pkg)\"" "Python 3.13.4" 0
 install_package "pip3 install --upgrade pip" "PIP" 0
+install_package "tmux" "Tmux" 1
 
 
