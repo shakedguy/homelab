@@ -24,7 +24,7 @@ An Homelab Configurations Repo
 18. [htop](https://htop.dev/) - Interactive process viewer
 19. [K9s](https://k9scli.io/) - Terminal UI for managing Kubernetes clusters
 
-### Automation and Scripting
+### Automation Tools
 
 1. [Taskfile](https://taskfile.dev/) - Task runner for automating tasks
 2. [Make](https://formulae.brew.sh/formula/make) - Build automation tool
