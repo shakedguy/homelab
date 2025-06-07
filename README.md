@@ -12,18 +12,26 @@ An Homelab Configurations Repo
 6. [Kubernetes CLI (kubectl)](https://kubernetes.io/docs/tasks/tools/) - Command-line tool
 7. [Helm CLI](https://helm.sh/docs/intro/install/) - Kubernetes Package Manager
 8. [Terraform](https://www.terraform.io/downloads.html) - Infrastructure as Code Tool
-9. [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) - Automation Tool
-10. [Git](https://git-scm.com/downloads) - Version Control System
-11. [GitHub CLI](https://cli.github.com/) - GitHub Command Line Interface
-12. [Helm](https://helm.sh/docs/intro/install/) - Kubernetes Package Manager
-13. [Kustomize](https://kubernetes-sigs.github.io/kustomize/installation/) - Kubernetes Configuration Management
-14. [Skaffold](https://skaffold.dev/docs/install/) - Kubernetes Development Tool
-15. [numi](https://numi.app/) - Calculator for macOS
-16. [jq](https://stedolan.github.io/jq/download/) - Command-line JSON processor
-17. [yq](https://mikefarah.gitbook.io/yq) - Command-line YAML processor
-18. [Glances](https://nicolargo.github.io/glances/) - Cross-platform system monitoring
-19. [htop](https://htop.dev/) - Interactive process viewer
-20. [K9s](https://k9scli.io/) - Terminal UI for managing Kubernetes clusters
+9. [Git](https://git-scm.com/downloads) - Version Control System
+10. [GitHub CLI](https://cli.github.com/) - GitHub Command Line Interface
+11. [Helm](https://helm.sh/docs/intro/install/) - Kubernetes Package Manager
+12. [Kustomize](https://kubernetes-sigs.github.io/kustomize/installation/) - Kubernetes Configuration Management
+13. [Skaffold](https://skaffold.dev/docs/install/) - Kubernetes Development Tool
+14. [numi](https://numi.app/) - Calculator for macOS
+15. [jq](https://stedolan.github.io/jq/download/) - Command-line JSON processor
+16. [yq](https://mikefarah.gitbook.io/yq) - Command-line YAML processor
+17. [Glances](https://nicolargo.github.io/glances/) - Cross-platform system monitoring
+18. [htop](https://htop.dev/) - Interactive process viewer
+19. [K9s](https://k9scli.io/) - Terminal UI for managing Kubernetes clusters
+
+### Automation and Scripting
+
+1. [Taskfile](https://taskfile.dev/) - Task runner for automating tasks
+2. [Make](https://formulae.brew.sh/formula/make) - Build automation tool
+3. [Parallel](https://formulae.brew.sh/formula/parallel#default) - Command-line tool for parallel execution
+4. [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) - Automation Tool
+5. [Packer](https://www.packer.io/downloads) - Tool for creating machine images
+6. [Terraform](https://www.terraform.io/downloads.html) - Infrastructure as Code Tool
 
 ### IDEs and Editors
 
