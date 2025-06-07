@@ -1,0 +1,34 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: very-strong-password
+      MSSQL_PID: Developer
+    expose:
+      - 1433
+    ports:
+      - 1433:1433
+    volumes:
+      - ../volumes/sqlserver/db/data:/var/opt/mssql/data
+      - ../volumes/sqlserver/db/log:/var/opt/mssql/log
+      - ../volumes/sqlserver/db/secrets:/var/opt/mssql/secrets
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/opt/mssql-tools/bin/sqlcmd',
+          '-S',
+          'localhost',
+          '-U',
+          'SA',
+          '-P',
+          'very-strong-password',
+          '-Q',
+          'SELECT 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
