@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: very-strong-password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    volumes:
+      - ../volumes/postgres/db/data:/var/lib/postgresql/data
