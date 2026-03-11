@@ -16,8 +16,8 @@
 #   gcloud       ~/Downloads/google-cloud-sdk or ~/.google-cloud-sdk
 ############################################################
 
-set -e
-set -o pipefail
+# set -e
+# set -o pipefail
 
 # --- PATH setup (must run first) ---
 path_prepend() { [[ -d "$1" ]] && export PATH="$1:$PATH"; }
