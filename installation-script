@@ -45,48 +45,39 @@ install_homebrew() {
 
 # Core CLI tools (matches actual install + shell-tooling.md)
 install_brew_formulae() {
-  brew install \
-    bat eza fd fzf ripgrep ripgrep-all jq yq jless \
-    zoxide \
-    dust htop tokei \
-    xh doggo \
-    gnu-sed \
-    minikube kubernetes-cli helm \
-    tmux tree rsync \
-    wget curl \
-    overmind foreman \
-    navi starship \
-    neovim \
-    mysql-client libpq \
-    python@3.14 \
-    go \
-    bun \
-    gh stripe \
-    vespa-cli \
-    valkey \
-    jid mc \
-    nginx \
-    cloudflared ngrok \
-    mas \
-    lazysql zsh-autocomplete go-task glances mactop \
-    llama.cpp
+  local formulae=(
+    bat eza fd fzf ripgrep ripgrep-all jq yq jless
+    zoxide dust htop tokei xh doggo gnu-sed
+    minikube kubernetes-cli helm tmux tree rsync wget curl
+    overmind foreman navi starship neovim
+    mysql-client libpq python@3.14 go bun gh stripe
+    vespa-cli valkey jid mc nginx cloudflared ngrok mas
+    lazysql zsh-autocomplete go-task glances mactop llama.cpp
+  )
+  for pkg in "${formulae[@]}"; do
+    brew install "$pkg" || true
+  done
 }
 
 # Zsh plugins (required for .zshrc)
 install_brew_zsh_plugins() {
-  brew install zsh-autosuggestions zsh-syntax-highlighting
+  for pkg in zsh-autosuggestions zsh-syntax-highlighting; do
+    brew install "$pkg" || true
+  done
 }
 
 # Casks (numi-cli at /usr/local/bin typically from Numi app; ngrok via brew)
 install_brew_casks() {
-  brew install --cask numi 2>/dev/null || true  # numi-cli for calc alias; may be from app
-  brew install --cask redis-tui font-jetbrains-mono-nerd-font 2>/dev/null || true
+  for pkg in numi redis-tui font-jetbrains-mono-nerd-font; do
+    brew install --cask "$pkg" || true
+  done
 }
 
 # Optional / situational (k8s tools, direnv, perf)
 install_brew_optional() {
-  brew install dive lazydocker aws-vault atuin 2>/dev/null || true
-  brew install k9s kubectx stern direnv bottom procs hyperfine coreutils 2>/dev/null || true
+  for pkg in dive lazydocker aws-vault atuin k9s kubectx stern direnv bottom procs hyperfine coreutils; do
+    brew install "$pkg" || true
+  done
 }
 
 # --- Rust / Cargo ---
