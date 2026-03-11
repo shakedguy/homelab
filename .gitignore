@@ -203,3 +203,5 @@ volumes/
 .cursorignore
 .cursorindexingignore
 .cursorignore
+.zshrc
+.zsh*
