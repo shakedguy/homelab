@@ -1,13 +1,16 @@
+name: mysql
 services:
   mysql:
     image: mysql:latest
     container_name: mysql
-    restart: unless-stopped
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: very-strong-password
-      MYSQL_DATABASE: mysql
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: masterkey
       MYSQL_USER: mysql
-      MYSQL_PASSWORD: very-strong-password
+      MYSQL_PASSWORD: masterkey
+      MYSQL_DATABASE: backend
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
     expose:
       - 3306
     ports:
@@ -15,8 +18,8 @@ services:
     volumes:
       - ../volumes/mysql/db/data:/var/lib/mysql
     healthcheck:
-      test:
-        ['CMD', 'mysqladmin', 'ping', '-u', 'root', '-pvery-strong-password']
-      interval: 30s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
       timeout: 10s
-      retries: 5
+      retries: 10
+

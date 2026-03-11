@@ -1,0 +1,24 @@
+services:
+  vespa:
+    image: vespaengine/vespa:latest
+    container_name: vespa
+    restart: unless-stopped
+    ulimits:
+      memlock: -1
+    expose:
+      - 19071
+      - 8080
+    hostname: vespa
+    ports:
+      - "8080:8080" # HTTP endpoint
+      - "19071:19071" # Admin/config API
+    environment:
+      - VESPA_IGNORE_NOT_ENOUGH_MEMORY=true
+    volumes:
+      - ../volumes/vespa/db:/opt/vespa/var
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/state/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 6
+      start_period: 40s

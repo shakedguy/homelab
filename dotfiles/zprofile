@@ -1,0 +1,10 @@
+# Amazon Q pre block. Keep at the top of this file.
+[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zprofile.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zprofile.pre.zsh"
+# Login-shell only.
+#
+# - Environment + PATH: `~/.zshenv`
+# - Interactive config (aliases/functions/prompt/completion): `~/.zshrc`
+
+# Setting PATH for Python 3.14 (mise also provides python; this is fallback)
+PATH="/Library/Frameworks/Python.framework/Versions/3.14/bin:${PATH}"
+export PATH

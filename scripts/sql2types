@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+
+import commandLineArgs from 'command-line-args'
+import { Client } from '@rmp135/sql-ts'
+import { writeFileSync } from 'fs'
+import pluralize from "pluralize";
+import _ from 'lodash'
+
+
+
+
+function toPascalCase(str){
+  return _.startCase(pluralize.singular(str)).replace(/ /g, '');
+}
+
+
+const optionDefinitions = [
+  { name: 'output', alias: 'o', type: String, defaultValue: 'types.ts' },
+  { name: 'host', type: String, defaultValue: '127.0.0.1' },
+  { name: 'user', alias: 'u', type: String, defaultValue: 'root' },
+  { name: 'password', alias: 'p', type: String, defaultValue: 'masterkey' },
+  { name: 'database', alias: 'd', type: String },
+  { name: 'schemas', type: String, defaultValue: 'validations' },
+]
+
+const cli = commandLineArgs(optionDefinitions)
+
+const config = {
+  client: 'mysql2',
+  connection: {
+    host: cli.host,
+    user: cli.user,
+    password: cli.password,
+    ...(cli.database && { database: cli.database }),
+  },
+  tableNameCasing: 'pascal',
+  columnNameCasing: 'camel',
+  singularTableNames: true,
+  schemas: cli.schemas.split(',').map((s) => s.trim()),
+  enumNameFormat: '${name}',
+  typeMap: {
+    string: ['nvarchar', 'varchar', 'text', 'longtext', 'tinytext', 'mediumtext', 'char', 'nchar', 'binary', 'varbinary', 'tinyblob', 'mediumblob', 'blob', 'longblob', 'enum', 'set', 'json', 'jsonb', 'uuid'],
+  },
+}
+
+async function main() {
+
+let definition = await Client.fromConfig(config)
+  .fetchDatabase()
+  .mapTables((table, schema) => ({
+    ...table,
+    interfaceName: toPascalCase(table.name),
+  }))
+  .toTypescript();
+
+// Convert interfaces to types (sql-ts has no built-in option for this)
+definition = definition.replace(
+  /export interface (\w+) extends ([^{]+) \{/g,
+  (_, name, ext) => `export type ${name} = ${ext.split(',').map(s => s.trim()).join(' & ')} & {`
+)
+definition = definition.replace(/export interface (\w+) \{/g, 'export type $1 = {')
+
+// Strip quotes from property keys that are valid identifiers (sql-ts quotes all keys by default)
+definition = definition.replace(/'([a-zA-Z_$][a-zA-Z0-9_$]*)'/g, '$1')
+
+writeFileSync(cli.output, definition);
+  console.log(`Successfully exported types to ${cli.output}`);
+}
+
+main();

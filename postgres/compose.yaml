@@ -1,21 +1,65 @@
+name: postgres
+
 services:
   postgres:
-    image: ankane/pgvector:latest
+    image: pgvector/pgvector:pg18
+    # image: shakedguy/pg-ai:latest
     container_name: postgres
+    # build:
+    #   context: ./builder
+    #   dockerfile: Dockerfile
+    network_mode: host
     restart: unless-stopped
+    command: postgres -c listen_addresses='*'
     environment:
       POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: very-strong-password
+      POSTGRES_USER: guyshaked
+      # POSTGRES_PASSWORD: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
     expose:
       - 5432
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
-      - ../volumes/postgres/db/data:/var/lib/postgresql/data
+      - ../volumes/postgres/data:/home/postgres/pgdata/data
+      # - volume:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 30s
       timeout: 10s
       retries: 5
+  # vectorizer-worker-chat:
+  #  image: timescale/pgai-vectorizer-worker:latest
+  #  container_name: vectorizer-worker-chat
+  #  extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #  environment:
+  #    PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@postgres:5432/mix_chat
+  #    OLLAMA_HOST: http://host.docker.internal:11434
+  #  command: [ "--poll-interval", "5s" ]
+  #  depends_on:
+  #    - postgres
+  # vectorizer-worker-analytics:
+  #  image: timescale/pgai-vectorizer-worker:latest
+  #  container_name: vectorizer-worker-analytics
+  #  extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #  environment:
+  #    PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@postgres:5432/analytics
+  #    OLLAMA_HOST: http://host.docker.internal:11434
+  #  command: [ "--poll-interval", "5s" ]
+  #  depends_on:
+  #     - postgres
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: dev.shakedguy@gmail.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #     PGADMIN_LISTEN_ADDRESS: 0.0.0.0
+  #     SCRIPT_NAME: ""
+  #   ports:
+  #     - 8081:80
+  #   depends_on:
+  #     - postgres

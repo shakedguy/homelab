@@ -1,19 +1,117 @@
+name: redis
+
 services:
   redis:
-    image: redis:latest
+    image: redis/redis-stack:latest
     container_name: redis
-    # command: dragonfly --logtostderr --cluster_mode=emulated --lock_on_hashtags
     restart: unless-stopped
     ulimits:
       memlock: -1
-    expose:
-      - 6379
     ports:
       - 6379:6379
+    expose:
+      - 6379
     volumes:
       - ../volumes/redis/db/data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 5
+  # valkey:
+  #   image: valkey/valkey:8-alpine
+  #   container_name: valkey
+  #   command: >
+  #     valkey-server --port 6379 --appendonly yes --save 60 10000
+  #   restart: unless-stopped
+  #   ulimits:
+  #     memlock: -1
+  #   ports:
+  #     - 6380:6379
+  #   volumes:
+  #     - ../volumes/valkey:/data
+
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+
+  # redis-node-0:
+  #   image: redis:8.0-alpine
+  #   hostname: redis-node-0
+  #   container_name: redis-node-0
+  #   command: >
+  #     redis-server --port 6000 --cluster-enabled yes
+  #     --cluster-config-file nodes.conf --cluster-node-timeout 5000
+  #     --appendonly yes --cluster-announce-ip redis-node-0 --cluster-announce-port 6000
+  #   ports:
+  #     - "6000:6000"
+
+  # redis-node-1:
+  #   image: redis:8.0-alpine
+  #   hostname: redis-node-1
+  #   container_name: redis-node-1
+  #   command: >
+  #     redis-server --port 6001 --cluster-enabled yes
+  #     --cluster-config-file nodes.conf --cluster-node-timeout 5000
+  #     --appendonly yes --cluster-announce-ip redis-node-1 --cluster-announce-port 6001
+  #   ports:
+  #     - "6001:6001"
+
+  # redis-node-2:
+  #   image: redis:8.0-alpine
+  #   hostname: redis-node-2
+  #   container_name: redis-node-2
+  #   command: >
+  #     redis-server --port 6002 --cluster-enabled yes
+  #     --cluster-config-file nodes.conf --cluster-node-timeout 5000
+  #     --appendonly yes --cluster-announce-ip redis-node-2 --cluster-announce-port 6002
+  #   ports:
+  #     - "6002:6002"
+
+  # redis-node-3:
+  #   image: redis:8.0-alpine
+  #   hostname: redis-node-3
+  #   container_name: redis-node-3
+  #   command: >
+  #     redis-server --port 6003 --cluster-enabled yes
+  #     --cluster-config-file nodes.conf --cluster-node-timeout 5000
+  #     --appendonly yes --cluster-announce-ip redis-node-3 --cluster-announce-port 6003
+  #   ports:
+  #     - "6003:6003"
+
+  # redis-node-4:
+  #   image: redis:8.0-alpine
+  #   hostname: redis-node-4
+  #   container_name: redis-node-4
+  #   command: >
+  #     redis-server --port 6004 --cluster-enabled yes
+  #     --cluster-config-file nodes.conf --cluster-node-timeout 5000
+  #     --appendonly yes --cluster-announce-ip redis-node-4 --cluster-announce-port 6004
+  #   ports:
+  #     - "6004:6004"
+
+  # redis-node-5:
+  #   image: redis:8.0-alpine
+  #   hostname: redis-node-5
+  #   container_name: redis-node-5
+  #   command: >
+  #     redis-server --port 6005 --cluster-enabled yes
+  #     --cluster-config-file nodes.conf --cluster-node-timeout 5000
+  #     --appendonly yes --cluster-announce-ip redis-node-5 --cluster-announce-port 6005
+  #   ports:
+  #     - "6005:6005"
+  # redisinsight:
+  #   image: redis/redisinsight:latest
+  #   container_name: redisinsight
+  #   restart: unless-stopped
+  #   ports:
+  #     - 5540:5540
+  #   volumes:
+  #     - ../volumes/redisinsight:/data
+    # networks:
+    #   redis-cluster:
+    #     aliases:
+    #       - redisinsight
+

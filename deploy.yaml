@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: poland-captcha-worker
+  name: poland-captcha-worker
+  namespace: default
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: poland-captcha-worker1
+  template:
+    metadata:
+      labels:
+        app: poland-captcha-worker1
+    spec:
+      containers:
+      - command: ["/app/.venv/bin/python", "manage.py", "runserver"]
+        env:
+        - name: RABBITMQ_URL
+          value: 'amqp://appoint:8175F0BB084D58ED@89.38.128.101:5672/esbot'
+        - name: RABBITMQ_VIRTUAL_HOST
+          value: 'esbot'
+        image: ghcr.io/appointit-io/poland-captcha-worker:staging
+        imagePullPolicy: Always
+        name: poland-captcha-worker1
+      imagePullSecrets:
+      - name: ghcr-secret
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+

@@ -1,0 +1,11 @@
+name: redisinsight
+services:
+    redisinsight:
+        image: redis/redisinsight:latest
+        container_name: redisinsight
+        restart: unless-stopped
+        ports:
+            - 5540:5540
+        volumes:
+          - ../volumes/redisinsight:/data
+        

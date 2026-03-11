@@ -1,0 +1,21 @@
+
+name: minio
+services:
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    env_file: 
+      - ./.env
+    command: server /data --console-address "0.0.0.0:9001"
+    platform: linux/amd64
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - ../volumes/minio:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'admin', 'info', 'minio']
+      interval: 30s
+      timeout: 10s
+      retries: 5

@@ -1,0 +1,95 @@
+#!/bin/bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+IMAGE="${IMAGE:-valkey/valkey:8-alpine}"
+PORTS=(6000 6001 6002 6003 6004 6005)
+PROXY_PORT="${PROXY_PORT:-7617}"
+NETWORK_NAME="host"
+PROXY_IMAGE="shakedguy/redis-cluster-proxy:latest"
+STARTUP_TIMEOUT_SECONDS="${STARTUP_TIMEOUT_SECONDS:-30}"
+
+# Keep volumes consistent even if the user runs the script from another directory.
+VOLUME_ROOT="${VOLUME_ROOT:-$SCRIPT_DIR/../volumes/redis-cluster}"
+
+CLUSTER_CONF_PATH="./cluster-proxy.conf"
+
+echo "Ensuring docker network exists: $NETWORK_NAME"
+docker network inspect "$NETWORK_NAME" >/dev/null 2>&1 || docker network create "$NETWORK_NAME" >/dev/null
+
+echo "Starting Redis/Valkey cluster nodes..."
+for port in "${PORTS[@]}"; do
+  idx="$((port-6000))"
+  data_dir="$VOLUME_ROOT/node-$idx"
+  mkdir -p "$data_dir"
+
+  echo "removing redis-node-$idx if it exists"
+  docker rm -f "redis-node-$idx" >/dev/null 2>&1 || true
+
+  echo "starting redis-node-$idx on port $port"
+  docker run -d --rm \
+    --name "redis-node-$idx" \
+    --network "$NETWORK_NAME" \
+    -v "$data_dir:/data" \
+    "$IMAGE" \
+    valkey-server \
+      --cluster-enabled yes \
+      --appendonly yes \
+      --bind 0.0.0.0 \
+      --port "$port" \
+      --protected-mode no \
+      --cluster-config-file nodes.conf >/dev/null
+done
+
+echo "Waiting for nodes to accept connections..."
+start_ts="$(date +%s)"
+for port in "${PORTS[@]}"; do
+  idx="$((port-6000))"
+  while true; do
+    if docker exec "redis-node-$idx" sh -lc "redis-cli -p $port ping >/dev/null 2>&1 || valkey-cli -p $port ping >/dev/null 2>&1"; then
+      break
+    fi
+    now_ts="$(date +%s)"
+    if (( now_ts - start_ts > STARTUP_TIMEOUT_SECONDS )); then
+      echo "Timed out waiting for redis-node-$idx:$port to become ready" >&2
+      exit 1
+    fi
+    sleep 0.3
+  done
+done
+
+echo "Creating cluster topology (3 masters, 3 replicas)..."
+hosts=()
+for port in "${PORTS[@]}"; do
+  idx="$((port-6000))"
+  hosts+=("127.0.0.1:$port")
+done
+
+# Use a one-off container on the same docker network so this works on macOS too.
+# docker run --rm --network "$NETWORK_NAME" "$IMAGE" sh -lc \
+#   "redis-cli --cluster create ${hosts[*]} --cluster-replicas 1 --cluster-yes || valkey-cli --cluster create ${hosts[*]} --cluster-replicas 1 --cluster-yes"
+
+
+redis-cli --cluster create ${hosts[*]} --cluster-replicas 1 --cluster-yes
+
+
+
+# echo "Ensuring proxy image exists: $PROXY_IMAGE"
+# docker image inspect "$PROXY_IMAGE" >/dev/null 2>&1 || \
+#   docker build -t "$PROXY_IMAGE" -f "$SCRIPT_DIR/Dockerfile.cluster-proxy" "$SCRIPT_DIR" >/dev/null
+
+echo "Starting Redis Cluster Proxy (Predixy) on port $PROXY_PORT..."
+docker rm -f redis-proxy >/dev/null 2>&1 || true
+docker run -d --rm \
+  --name redis-proxy \
+  --network "$NETWORK_NAME" \
+  "$PROXY_IMAGE" >/dev/null
+#   -v "$SCRIPT_DIR/predixy/conf/predixy.conf:/usr/local/etc/predixy/predixy.conf:ro" \
+#   -v "$CLUSTER_CONF_PATH:/usr/local/etc/predixy/cluster.conf:ro" \
+  
+
+echo "Redis Cluster is up and running!"
+echo "Access the Redis Cluster Proxy at 127.0.0.1:$PROXY_PORT"
+

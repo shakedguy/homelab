@@ -1,0 +1,21 @@
+
+name: timescaledb
+services:
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    container_name: timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - 5433:5432
+    volumes:
+      - ../volumes/timescaledb:/pgdata
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 30s
+      timeout: 10s
+      retries: 5

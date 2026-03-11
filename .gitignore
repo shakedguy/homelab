@@ -197,3 +197,9 @@ cython_debug/
 **/tmp.*
 **/*.tmp
 volumes/
+.antigravity/
+.cursor/
+.vscode/
+.cursorignore
+.cursorindexingignore
+.cursorignore

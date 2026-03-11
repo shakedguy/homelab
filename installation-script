@@ -1,0 +1,434 @@
+#!/usr/bin/env bash
+############################################################
+# Terminal tools, CLI apps, and configurations
+# Generated from ~/.zshrc, ~/.zshenv, homelab scripts
+#
+# CONFIGURATION REFERENCE (where each tool's config lives):
+#   starship     ~/.config/starship/starship.toml
+#   fzf          FZF_DEFAULT_OPTS, FZF_*_COMMAND (in .zshenv)
+#   bat          BAT_THEME="Visual Studio Dark+" (in .zshenv)
+#   zoxide       auto-init in .zshrc via eval "$(zoxide init zsh)"
+#   navi         ~/Projects/navi-cheats/cheats (--path in .zshrc)
+#   fzf-tab      ~/fzf-tab/fzf-tab.plugin.zsh + zstyle in .zshrc
+#   uv/uvx       shell completion via eval in .zshrc (uv via mise)
+#   mise         ~/.config/mise/config.toml, ~/.local/bin/mise
+#   docker       ~/.docker/completions (in fpath)
+#   gcloud       ~/Downloads/google-cloud-sdk or ~/.google-cloud-sdk
+############################################################
+
+set -e
+set -o pipefail
+
+# --- PATH setup (must run first) ---
+path_prepend() { [[ -d "$1" ]] && export PATH="$1:$PATH"; }
+path_prepend "$HOME/.local/bin"
+path_prepend "/opt/homebrew/bin"
+path_prepend "/opt/homebrew/opt/mysql-client/bin"
+path_prepend "/opt/homebrew/opt/libpq/bin"
+path_prepend "$HOME/.cargo/bin"
+path_prepend "$HOME/.duckdb/cli/latest"
+path_prepend "$HOME/.bun/bin"
+path_prepend "$HOME/.dotnet"
+path_prepend "$HOME/.dotnet/tools"
+path_prepend "$HOME/Desktop/dev/guy/bin"
+path_prepend "$HOME/Desktop/dev/guy/homelab/scripts"
+path_prepend "$HOME/.google-cloud-sdk/bin"
+path_prepend "$HOME/Library/pnpm"
+path_prepend "$HOME/.antigravity/antigravity/bin"
+
+# --- Homebrew (macOS) ---
+install_homebrew() {
+  if ! command -v brew &>/dev/null; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
+}
+
+# Core CLI tools (matches actual install + shell-tooling.md)
+install_brew_formulae() {
+  brew install \
+    bat eza fd fzf ripgrep ripgrep-all jq yq jless \
+    zoxide \
+    dust htop tokei \
+    xh doggo \
+    gnu-sed \
+    minikube kubernetes-cli helm \
+    tmux tree rsync \
+    wget curl \
+    overmind foreman \
+    navi starship \
+    neovim \
+    mysql-client libpq \
+    python@3.14 \
+    go \
+    bun \
+    gh stripe \
+    vespa-cli \
+    valkey \
+    jid mc \
+    nginx \
+    cloudflared ngrok \
+    mas \
+    lazysql zsh-autocomplete go-task glances mactop
+}
+
+# Zsh plugins (required for .zshrc)
+install_brew_zsh_plugins() {
+  brew install zsh-autosuggestions zsh-syntax-highlighting
+}
+
+# Casks (numi-cli at /usr/local/bin typically from Numi app; ngrok via brew)
+install_brew_casks() {
+  brew install --cask numi 2>/dev/null || true  # numi-cli for calc alias; may be from app
+  brew install --cask redis-tui font-jetbrains-mono-nerd-font 2>/dev/null || true
+}
+
+# Optional / situational (k8s tools, direnv, perf)
+install_brew_optional() {
+  brew install dive lazydocker aws-vault atuin 2>/dev/null || true
+  brew install k9s kubectx stern direnv bottom procs hyperfine coreutils 2>/dev/null || true
+}
+
+# --- Rust / Cargo ---
+install_rust() {
+  if ! command -v rustup &>/dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+  fi
+}
+
+# --- Mise (node, pnpm, python, uv, watchexec) ---
+install_mise() {
+  if ! command -v mise &>/dev/null; then
+    curl https://mise.run | sh
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  if [[ ! -f "$HOME/.config/mise/config.toml" ]]; then
+    mkdir -p "$HOME/.config/mise"
+    cat > "$HOME/.config/mise/config.toml" << 'MISE_EOF'
+[tools]
+node = "24"
+pnpm = "10.31"
+python = "3.14.2"
+uv = "latest"
+watchexec = "latest"
+MISE_EOF
+    mise install
+  fi
+}
+
+# --- Python / UV (fallback if not using mise) ---
+install_uv() {
+  if ! command -v uv &>/dev/null; then
+    if command -v mise &>/dev/null; then
+      mise use -g uv@latest
+    else
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+    fi
+  fi
+}
+
+# --- Bun ---
+install_bun() {
+  if ! command -v bun &>/dev/null; then
+    curl -fsSL https://bun.sh/install | bash
+  fi
+}
+
+# --- Docker completions ---
+setup_docker_completions() {
+  mkdir -p "$HOME/.docker/completions"
+  # Docker Desktop on macOS provides these; if using colima/other, fetch manually
+  if [[ -d /Applications/Docker.app ]]; then
+    # Docker Desktop bundles completions
+    : # no-op, Docker Desktop handles it
+  fi
+}
+
+# --- fzf-tab (zsh plugin) ---
+install_fzf_tab() {
+  local fzf_tab_dir="$HOME/fzf-tab"
+  if [[ ! -d "$fzf_tab_dir" ]]; then
+    git clone https://github.com/Aloxaf/fzf-tab "$fzf_tab_dir"
+  fi
+}
+
+# --- Navi cheats ---
+setup_navi_cheats() {
+  # .zshrc expects: navi --path ${HOME}/Projects/navi-cheats/cheats
+  mkdir -p "$HOME/Projects/navi-cheats/cheats"
+  # Add your cheats here or clone a repo
+}
+
+# --- Starship config ---
+setup_starship() {
+  mkdir -p "$HOME/.config/starship"
+  if [[ ! -f "$HOME/.config/starship/starship.toml" ]]; then
+    cat > "$HOME/.config/starship/starship.toml" << 'STARSHIP_EOF'
+add_newline = false
+command_timeout = 1000
+palette = "catppuccin_mocha"
+format = """[ ](mauve) $directory$character"""
+right_format = """$nodejs$python$rust$dotnet$aws$kubernetes$docker_context$cmd_duration$status$hostname$time"""
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold lavender"
+[git_branch]
+symbol = " "
+format = "[$symbol$branch]($style) "
+style = "mauve"
+[git_status]
+format = "[$all_status$ahead_behind]($style) "
+style = "peach"
+[cmd_duration]
+min_time = 500
+format = "[⏱ $duration]($style) "
+style = "yellow"
+[status]
+disabled = false
+format = "[$symbol$status]($style) "
+symbol = "✖ "
+style = "red"
+[time]
+disabled = false
+format = "[ $time]($style) "
+time_format = "%H:%M"
+style = "overlay1"
+[hostname]
+ssh_only = true
+format = "[ $hostname]($style) "
+style = "red"
+[aws]
+disabled = false
+symbol = " "
+style = "bold blue"
+format = '[$symbol$profile(\($region\))]($style) '
+[kubernetes]
+symbol = " "
+disabled = false
+style = "teal"
+format = '[$symbol$context( \($namespace\))]($style) '
+detect_env_vars = ["KUBECONFIG"]
+detect_files = ["k8s.yaml", "kustomization.yaml", "helmfile.yaml", "Chart.yaml"]
+[docker_context]
+disabled = false
+symbol = " "
+format = "[$symbol$context]($style) "
+style = "sapphire"
+[nodejs]
+symbol = " "
+style = "green"
+format = "[$symbol($version)]($style) "
+[python]
+symbol = " "
+style = "yellow"
+format = "[$symbol$pyenv_prefix($version) (\\($virtualenv\\))]($style) "
+detect_files = ["pyproject.toml", "requirements.txt", "Pipfile", "poetry.lock", "setup.py", "uv.lock"]
+[rust]
+symbol = " "
+style = "peach"
+format = "[$symbol($version)]($style) "
+detect_files = ["Cargo.toml"]
+[dotnet]
+symbol = " "
+style = "mauve"
+format = "[$symbol($version)]($style) "
+detect_files = ["*.sln", "*.csproj", "*.fsproj", "*.vbproj", "global.json"]
+STARSHIP_EOF
+  fi
+}
+
+# --- Environment variables (non-secret) ---
+# Secrets (AWS, Google, etc.) should be set manually or via aws-vault / 1password
+setup_env_example() {
+  cat << 'ENV_EOF'
+# Add to ~/.zshenv (non-secret vars only):
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+export EDITOR='zed'
+export KUBECONFIG="$HOME/.kube/config"
+export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+export BAT_THEME="Visual Studio Dark+"
+export STARSHIP_CONFIG=~/.config/starship/starship.toml
+export DOCKER_API_VERSION=1.52
+export COMPOSE_BAKE=true
+export HISTFILE=$HOME/.zhistory
+export SAVEHIST=1000
+export HISTSIZE=999
+ENV_EOF
+}
+
+# --- Dotnet global tools ---
+install_dotnet_tools() {
+  dotnet tool install -g dotnet-ef 2>/dev/null || true
+  dotnet tool install -g dotnet-counters 2>/dev/null || true
+  dotnet tool install -g dotnet-dump 2>/dev/null || true
+  dotnet tool install -g dotnet-trace 2>/dev/null || true
+}
+
+# --- Homelab scripts (git-fzf binary) ---
+# scripts/git-fzf is a Rust binary used by fzf-tab for git checkout/switch
+# Build with: cd scripts && cargo build --release
+build_git_fzf() {
+  local script_dir="${HOMELAB_DIR:-$HOME/Desktop/dev/guy/homelab}/scripts"
+  if [[ -f "$script_dir/Cargo.toml" ]]; then
+    (cd "$script_dir" && cargo build --release 2>/dev/null) || true
+  fi
+}
+
+# --- Dotfiles (.zshrc, .zshenv) ---
+# Copies aliases, functions, bindings, zstyle from homelab/dotfiles/
+setup_dotfiles() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || script_dir="$HOME/Desktop/dev/guy/homelab"
+  local homelab_dir="${HOMELAB_DIR:-$script_dir}"
+  local dotfiles_dir="$script_dir/dotfiles"
+
+  if [[ ! -d "$dotfiles_dir" ]]; then
+    echo "  (no dotfiles/ dir, skipping)"
+    return 0
+  fi
+
+  # .zshrc
+  if [[ -f "$dotfiles_dir/zshrc" ]]; then
+    [[ -f "$HOME/.zshrc" ]] && cp "$HOME/.zshrc" "$HOME/.zshrc.bak.$(date +%Y%m%d)"
+    cp "$dotfiles_dir/zshrc" "$HOME/.zshrc"
+    echo "  Installed ~/.zshrc (aliases, functions, bindings, zstyle)"
+  fi
+
+  # .zprofile (login shell: Python PATH, Amazon Q)
+  if [[ -f "$dotfiles_dir/zprofile" ]]; then
+    cp "$dotfiles_dir/zprofile" "$HOME/.zprofile"
+    echo "  Installed ~/.zprofile"
+  fi
+
+  # .zshenv: set HOMELAB_DIR, create from template if missing
+  if ! grep -q 'HOMELAB_DIR' "$HOME/.zshenv" 2>/dev/null; then
+    local env_line="export HOMELAB_DIR=\"$homelab_dir\""
+    if [[ -f "$HOME/.zshenv" ]]; then
+      # Prepend HOMELAB_DIR to existing .zshenv
+      echo "$env_line" | cat - "$HOME/.zshenv" > "$HOME/.zshenv.tmp" && mv "$HOME/.zshenv.tmp" "$HOME/.zshenv"
+      echo "  Added HOMELAB_DIR to ~/.zshenv"
+    elif [[ -f "$dotfiles_dir/zshenv.template" ]]; then
+      {
+        echo "$env_line"
+        echo ""
+        cat "$dotfiles_dir/zshenv.template"
+      } > "$HOME/.zshenv"
+      echo "  Created ~/.zshenv from template (add your secrets)"
+    fi
+  fi
+}
+
+# --- Inventory (list only, no install) ---
+print_inventory() {
+  cat << 'INV'
+TOOLS (from .zshrc / .zshenv / homelab):
+  Homebrew: bat eza fd fzf ripgrep ripgrep-all jq yq jless zoxide dust htop tokei
+            xh doggo gnu-sed minikube kubernetes-cli helm tmux navi starship neovim
+            mysql-client libpq python@3.14 go bun gh stripe vespa-cli valkey
+            jid mc nginx cloudflared ngrok mas lazysql zsh-autocomplete go-task glances mactop
+  Mise:     node 24, pnpm 10.31, python 3.14, uv, watchexec
+  Cargo:    rustup, cargo, rustfmt, rust-analyzer
+  Dotnet:   dotnet-ef, dotnet-counters, dotnet-dump, dotnet-trace
+  Bun:      (global packages)
+  Custom:   ~/Desktop/dev/guy/bin, ~/Desktop/dev/guy/homelab/scripts
+
+DOTFILES (homelab/dotfiles/):
+  zshrc           -> ~/.zshrc   (aliases, functions, bindings, zstyle, mise, fzf)
+  zprofile        -> ~/.zprofile (login: Python PATH, Amazon Q)
+  zshenv.template -> ~/.zshenv  (PATH, FZF_*, BAT_THEME; add secrets manually)
+
+KEY ALIASES: k/kubectl, m/minikube, gs/ga/gc/gp/git, d/docker, dud/dust, cur/cursor,
+  pg/psql, msql/mysql, homelab, redis-restart, mysql-restart, lf/rga-fzf, calc/numi-cli
+BINDINGS: ^n navi, ^X^E edit-line, ^Xc copy-buffer, ^[[A/B history-search
+ZSTYLE: fzf-tab git checkout/switch, completion matchers
+
+CONFIG FILES:
+  ~/.config/starship/starship.toml
+  ~/fzf-tab/fzf-tab.plugin.zsh
+  ~/Projects/navi-cheats/cheats
+  ~/.docker/completions
+
+USAGE:
+  ./installation-script           # full install
+  ./installation-script --list    # inventory only
+  ./installation-script --sync-from-home  # copy ~/.zshrc, ~/.zprofile -> dotfiles/
+INV
+}
+
+# --- Sync: copy current config into dotfiles/ (for updating repo after local edits)
+sync_from_home() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || return 1
+  mkdir -p "$script_dir/dotfiles"
+  [[ -f "$HOME/.zshrc" ]] && { cp "$HOME/.zshrc" "$script_dir/dotfiles/zshrc"; echo "Copied ~/.zshrc -> dotfiles/zshrc"; }
+  [[ -f "$HOME/.zprofile" ]] && { cp "$HOME/.zprofile" "$script_dir/dotfiles/zprofile"; echo "Copied ~/.zprofile -> dotfiles/zprofile"; }
+  # zshenv contains secrets - do not sync; edit dotfiles/zshenv.template manually
+}
+
+# --- Main ---
+main() {
+  [[ "$1" == "--list" ]] && { print_inventory; exit 0; }
+  [[ "$1" == "-l" ]] && { print_inventory; exit 0; }
+  [[ "$1" == "--sync-from-home" ]] && { sync_from_home; exit 0; }
+
+  local skip_brew=0
+  [[ "$1" == "--skip-brew" ]] && skip_brew=1
+
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || true
+  export HOMELAB_DIR="${HOMELAB_DIR:-$SCRIPT_DIR}"
+
+  echo "=== Terminal tools & CLI installation ==="
+  install_homebrew
+
+  echo "--- Dotfiles (.zshrc, .zshenv) ---"
+  setup_dotfiles
+
+  if [[ $skip_brew -eq 0 ]]; then
+    echo "--- Installing Homebrew formulae ---"
+    install_brew_formulae
+    install_brew_zsh_plugins
+    echo "--- Installing Homebrew casks ---"
+    install_brew_casks
+  fi
+
+  echo "--- Mise (node, pnpm, python, uv) ---"
+  install_mise
+
+  echo "--- Rust ---"
+  install_rust
+
+  echo "--- Python/UV (fallback) ---"
+  install_uv
+
+  echo "--- Bun ---"
+  install_bun
+
+  echo "--- Starship ---"
+  setup_starship
+
+  echo "--- fzf-tab ---"
+  install_fzf_tab
+
+  echo "--- Navi cheats ---"
+  setup_navi_cheats
+
+  echo "--- Dotnet tools ---"
+  install_dotnet_tools 2>/dev/null || true
+
+  echo "--- Build git-fzf (optional) ---"
+  build_git_fzf
+
+  echo ""
+  echo "Done. Next steps:"
+  echo "  1. Add secrets to ~/.zshenv (AWS, Google, etc.) if not already present"
+  echo "  2. Run: source ~/.zshenv && source ~/.zshrc"
+}
+
+main "$@"

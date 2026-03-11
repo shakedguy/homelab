@@ -1,0 +1,20 @@
+#!/bin/bash
+
+input="$1"
+
+
+# if no input argument is provided and no in git repo, print usage and exit
+if [[ -z "$input" && ! $(git rev-parse --is-inside-work-tree 2>/dev/null) ]]; then
+    echo "no input provided and not in a git repository" >&2
+    echo "Usage: $0 <input-string>" >&2
+    exit 1
+fi
+
+# if input provided, use it; else get git commit messages
+if [[ -n "$input" ]]; then
+    :
+else
+    input=$(git branch --show-current 2>/dev/null || git log -1 --pretty=%B 2>/dev/null)
+fi
+
+echo "$input" | grep -o 'DICE-[0-9]\+'

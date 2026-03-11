@@ -1,0 +1,19 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@rmp135/sql-ts": "^2.2.0",
+    "command-line-args": "^6.0.1",
+    "knex": "^3.1.0",
+    "lodash": "^4.17.23",
+    "mysql2": "^3.17.5",
+    "pluralize": "^8.0.0"
+  }
+}

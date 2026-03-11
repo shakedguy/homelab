@@ -1,0 +1,21 @@
+services:
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=admin
+    volumes:
+      - ../volumes/seq/data:/data
+    expose:
+      - 5341
+      - 80
+    ports:
+      - 5342:80
+      - 5341:5341
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5341/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

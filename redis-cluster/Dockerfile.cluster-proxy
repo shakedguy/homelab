@@ -1,0 +1,62 @@
+FROM debian:bookworm-slim AS build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    make \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp
+
+# Copy local predixy source code
+COPY predixy /tmp/predixy
+
+# Patch String.h to add missing ctime header and fix Makefile for _GNU_SOURCE
+WORKDIR /tmp/predixy
+RUN sed -i '14a#include <ctime>' src/String.h && \
+    sed -i '3aOpts += -D_GNU_SOURCE' src/Makefile
+
+# Clean any pre-compiled object files from different platform (macOS -> Linux)
+RUN find src -name "*.o" -delete && \
+    rm -f src/predixy || true
+
+# Build predixy
+RUN make
+
+FROM debian:bookworm-slim AS runtime
+
+# Install runtime dependencies (bash for shell access)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN groupadd -r app && useradd -r -g app app
+
+# Copy predixy binary from build stage
+COPY --from=build /tmp/predixy/src/predixy /usr/local/bin/predixy
+RUN chmod +x /usr/local/bin/predixy
+
+# Copy configuration files
+COPY --chown=app:app predixy/conf /usr/local/etc/predixy
+
+# Create directories for logs and runtime data
+RUN mkdir -p /usr/local/var/log/predixy \
+    && mkdir -p /usr/local/var/run/predixy \
+    && chown -R app:app /usr/local/var
+
+# Set working directory
+WORKDIR /usr/local/etc/predixy
+
+# Switch to app user
+USER app
+
+# Expose predixy default port
+EXPOSE 7617
+
+# Default command - can be overridden
+CMD ["/usr/local/bin/predixy", "/usr/local/etc/predixy/predixy.conf"]
+

@@ -1,0 +1,7 @@
+name: nginx
+services:
+    nginx:
+        container_name: my-custom-nginx-container
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        image: nginx

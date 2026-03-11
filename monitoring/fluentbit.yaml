@@ -1,0 +1,100 @@
+serviceAccount:
+  create: true
+  name: fluent-bit
+
+# AWS credentials: use Kubernetes secret (kubectl create secret generic aws-credentials ...)
+env:
+  - name: AWS_REGION
+    value: eu-central-1
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: aws-credentials
+        key: AWS_ACCESS_KEY_ID
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: aws-credentials
+        key: AWS_SECRET_ACCESS_KEY
+
+config:
+  service: |
+    [SERVICE]
+        Flush         1
+        Daemon        Off
+        Log_Level     info
+        HTTP_Server   On
+        HTTP_Listen   0.0.0.0
+        HTTP_Port     2020
+
+  inputs: |
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*.log
+        multiline.parser  docker, cri
+        Tag               kube.*
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+  filters: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Merge_Log           On
+        Keep_Log            On
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude On
+
+    [FILTER]
+        Name grep
+        Match kube.*
+        Regex $kubernetes['labels']['log.category'] app
+
+    [FILTER]
+        Name modify
+        Match kube.*
+
+  outputs: |
+    [OUTPUT]
+        Name stdout
+        Match *
+        Format json_lines
+
+    [OUTPUT]
+        Name                  cloudwatch_logs
+        Match                 *
+        region                eu-central-1
+        log_group_name        minikube-logs
+        log_stream_prefix     fluentbit-
+        auto_create_group     true
+        log_format            text
+
+customParsers: |
+  [PARSER]
+      Name         json
+      Format       json
+      Time_Key     Timestamp
+      Time_Format  %Y-%m-%dT%H:%M:%S.%LZ
+      Time_Keep    On
+
+customParsersMultiline: |
+  [MULTILINE_PARSER]
+      Name docker
+      Format json
+      Regex ^\{.*\}$
+
+  [MULTILINE_PARSER]
+      Name cri
+      Format regex
+      Regex ^(?P<time>.+?) (?P<stream>stdout|stderr) (?P<logtag>[FP]) (?P<log>.*)
+      Time_Key time
+      Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+
+extraVolumes:
+  - name: custom-parsers
+    configMap:
+      name: fluent-bit-custom-parsers
+
+extraVolumeMounts:
+  - name: custom-parsers
+    mountPath: /fluent-bit/etc/custom-parsers.conf
+    subPath: custom-parsers.conf

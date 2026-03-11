@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+############################################################
+# Created by: Guy Shaked                                   #
+# Github: https://github.com/shakedguy                     #
+# Phone: +972542422521                                     #
+############################################################
+
+
+# Description: This script is used to fast parallel copy files/folders using rsync
+# Usage: fcp <source> <destination> [<options>]
+# Example: fcp /path/to/source /path/to/destination -a --progress --info=progress2 --exclude 'node_modules' --exclude '.git'
+# Note: You can use any rsync options you want, just make sure to include the -a option for archive mode
+# Note: You can use --dry-run option to see what will be copied without actually copying the files
+# Note: You can use --delete option to delete files in the destination that are not in the source
+# Note: You can use --exclude option to exclude files/folders from being copied
+# Note: You can use --include option to include files/folders that are excluded by default
+# Note: You can use --progress option to see the progress of the copy
+# Note: You can use --info=progress2 option to see the progress of the copy
+# Note: You can use --partial option to keep partially transferred files
+# Note: You can use --partial-dir option to specify a directory to store partially transferred files
+# Note: You can use --bwlimit option to limit the bandwidth used by rsync
+
+
+# Check if rsync is installed
+if ! command -v rsync &> /dev/null
+then
+    echo "rsync could not be found, please install it first"
+    exit 1
+fi
+
+# Check if the correct number of arguments are provided
+if [ "$#" -lt 2 ]; then
+    echo "Usage: fcp <source> <destination> [<options>]"
+    exit 1
+fi
+# Get the source and destination arguments
+SRC=$1
+DST=$2
+JOBS=8
+shift 2
+OPTIONS="$@"
+
+
+mkdir -p "$DST"
+
+
+
+# Run parallel rsync command with the provided options (local copy)
+rsync -aAX --info=progress2,stats2 "$SRC/" "$DST/"
+
+
+if [ $? -ne 0 ]; then
+    echo "Error: rsync command failed"
+    exit 1
+fi
+# Print a success message
+echo "Files copied successfully from $SRC to $DST"
+exit 0

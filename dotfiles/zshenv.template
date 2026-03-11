@@ -1,0 +1,75 @@
+# Dotfiles template - copy to ~/.zshenv and add your secrets
+# HOMELAB_DIR is set by installation-script; override if homelab lives elsewhere
+
+. "$HOME/.cargo/env"
+
+typeset -U path PATH
+path_prepend() { [[ -d "$1" ]] && path=("$1" $path); }
+path_append()  { [[ -d "$1" ]] && path+=("$1"); }
+
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
+path_prepend "$HOME/.local/bin"
+path_prepend "/opt/homebrew/bin"
+path_prepend "/opt/homebrew/opt/mysql-client/bin"
+path_prepend "/opt/homebrew/opt/libpq/bin"
+path_prepend "/Library/Frameworks/Python.framework/Versions/3.13/bin"
+path_prepend "/Library/Frameworks/Python.framework/Versions/3.14/bin"
+path_prepend "$HOME/Desktop/dev/guy/bin"
+path_prepend "${HOMELAB_DIR:-$HOME/Desktop/dev/guy/homelab}/scripts"
+path_prepend "$HOME/.cargo/bin"
+path_prepend "$HOME/.duckdb/cli/latest"
+path_prepend "$HOME/.bun/bin"
+path_prepend "$HOME/.dotnet"
+path_prepend "$HOME/.google-cloud-sdk/bin"
+path_prepend "$HOME/Downloads/google-cloud-sdk/bin"
+
+# FZF colors (catppuccin-like)
+export fg="#CBE0F0"
+export bg="#011628"
+export bg_highlight="#143652"
+export purple="#B388FF"
+export blue="#06BCE4"
+export cyan="#2CF9ED"
+
+export COMPOSE_BAKE=true
+export HISTFILE=$HOME/.zhistory
+export SAVEHIST=1000
+export HISTSIZE=999
+export KUBECONFIG="$HOME/.kube/config"
+
+export LDFLAGS="-L/opt/homebrew/opt/libpq/lib -L/opt/homebrew/opt/curl/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/libpq/include -I/opt/homebrew/opt/curl/include"
+
+# FZF / Bat
+export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
+export FZF_DEFAULT_OPTS="--color=fg:${fg},bg:${bg},hl:${purple},fg+:${fg},bg+:${bg_highlight},hl+:${purple},info:${blue},prompt:${cyan},pointer:${cyan},marker:${cyan},spinner:${cyan},header:${cyan}"
+export BAT_THEME="Visual Studio Dark+"
+
+export PNPM_HOME="$HOME/Library/pnpm"
+path_prepend "$PNPM_HOME"
+export BUN_INSTALL="$HOME/.bun"
+export UV_PYTHON=/Library/Frameworks/Python.framework/Versions/3.14/bin/python3
+export EDITOR='zed'
+export DOCKER_API_VERSION=1.52
+export PATH="$PATH:$HOME/.dotnet/tools"
+
+# Ollama / Anthropic (local)
+export ANTHROPIC_AUTH_TOKEN=ollama
+export ANTHROPIC_API_KEY=""
+export ANTHROPIC_BASE_URL=http://localhost:11434
+export ANTHROPIC_MODEL=qwen3-coder:latest
+
+# --- ADD YOUR SECRETS BELOW (do not commit) ---
+# export AWS_ACCESS_KEY_ID="..."
+# export AWS_SECRET_ACCESS_KEY="..."
+# export AWS_SESSION_TOKEN="..."
+# export Google__ClientId="..."
+# export Google__ClientSecret="..."
+# export GOOGLE_APPLICATION_CREDENTIALS="..."
+# etc.

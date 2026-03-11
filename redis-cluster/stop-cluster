@@ -1,0 +1,37 @@
+#!/bin/bash
+
+
+echo "Stopping Redis Cluster Proxy..."
+docker stop redis-proxy > /dev/null 2>&1 || true
+
+echo "Removing Redis Cluster Proxy..."
+docker rm redis-proxy > /dev/null 2>&1 || true
+
+ports=(6000 6001 6002 6003 6004 6005)
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+VOLUME_ROOT="${VOLUME_ROOT:-$SCRIPT_DIR/../volumes/redis-cluster}"
+
+CLI=""
+command -v valkey-cli >/dev/null 2>&1 && CLI="valkey-cli"
+[[ -z "$CLI" ]] && command -v redis-cli >/dev/null 2>&1 && CLI="redis-cli"
+
+for port in "${ports[@]}"; do
+  idx="$((port-6000))"
+  data_dir="$VOLUME_ROOT/node-$idx"
+  pid_path="$data_dir/valkey.pid"
+
+  echo "Stopping host node $idx (port $port)..."
+  if [[ -n "$CLI" ]]; then
+    "$CLI" -p "$port" shutdown nosave >/dev/null 2>&1 || true
+  fi
+  if [[ -f "$pid_path" ]]; then
+    pid="$(cat "$pid_path" 2>/dev/null || true)"
+    if [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
+      kill "$pid" >/dev/null 2>&1 || true
+    fi
+    rm -f "$pid_path" >/dev/null 2>&1 || true
+  fi
+done
+
+echo "Redis Cluster is stopped and removed!"

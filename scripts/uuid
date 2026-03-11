@@ -1,13 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 ############################################################
 # Created by: Guy Shaked                                   #
 # Github: https://github.com/shakedguy                     #
 # Phone: +972542422521                                     #
 ############################################################
 
-set -e
-set -o pipefail
+from uuid import uuid7
 
-timestamp=$(date +%s)
-random_hex=$(openssl rand -hex 8 | tr '[:lower:]' '[:upper:]')
-echo "${timestamp}-${random_hex}"
+print(uuid7())
