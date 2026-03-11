@@ -291,6 +291,7 @@ alias tail='tail -f'
 alias p='listen'
 alias dns='doggo'
 alias d='docker'
+alias dui='lazydocker'
 
 alias curlq='curl -sS'
 alias wgetq='wget -q'

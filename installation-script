@@ -327,39 +327,148 @@ setup_dotfiles() {
 
 # --- Inventory (list only, no install) ---
 print_inventory() {
-  cat << 'INV'
-TOOLS (from .zshrc / .zshenv / homelab):
-  Homebrew: bat eza fd fzf ripgrep ripgrep-all jq yq jless zoxide dust htop tokei
-            xh doggo gnu-sed minikube kubernetes-cli helm tmux navi starship neovim
-            mysql-client libpq python@3.14 go bun gh stripe vespa-cli valkey
-            jid mc nginx cloudflared ngrok mas lazysql zsh-autocomplete go-task glances mactop
-  Mise:     node 24, pnpm 10.31, python 3.14, uv, watchexec
-  Cargo:    rustup, cargo, rustfmt, rust-analyzer
-  Dotnet:   dotnet-ef, dotnet-counters, dotnet-dump, dotnet-trace
-  Bun:      (global packages)
-  Custom:   ~/Desktop/dev/guy/bin, ~/Desktop/dev/guy/homelab/scripts
+  local fmt="%-28s  %s\n"
+  local sep="────────────────────────────────────────────────────────────────────────"
 
-DOTFILES (homelab/dotfiles/):
-  zshrc           -> ~/.zshrc   (aliases, functions, bindings, zstyle, mise, fzf)
-  zprofile        -> ~/.zprofile (login: Python PATH, Amazon Q)
-  zshenv.template -> ~/.zshenv  (PATH, FZF_*, BAT_THEME; add secrets manually)
+  echo ""
+  echo "  HOMEBREW FORMULAE"
+  echo "$sep"
+  printf "$fmt" "Package" "Description"
+  echo "$sep"
+  printf "$fmt" "bat" "cat with syntax highlighting"
+  printf "$fmt" "eza" "modern ls replacement"
+  printf "$fmt" "fd" "fast find alternative"
+  printf "$fmt" "fzf" "fuzzy finder"
+  printf "$fmt" "ripgrep" "fast grep"
+  printf "$fmt" "ripgrep-all" "search in text, pdf, zip, etc"
+  printf "$fmt" "jq" "JSON processor"
+  printf "$fmt" "yq" "YAML processor"
+  printf "$fmt" "jless" "JSON pager"
+  printf "$fmt" "zoxide" "smart cd"
+  printf "$fmt" "dust" "du with visual breakdown"
+  printf "$fmt" "htop" "interactive process viewer"
+  printf "$fmt" "tokei" "code stats"
+  printf "$fmt" "xh" "HTTP client (curl)"
+  printf "$fmt" "doggo" "DNS lookup"
+  printf "$fmt" "gnu-sed" "stream editor"
+  printf "$fmt" "minikube" "local Kubernetes"
+  printf "$fmt" "kubernetes-cli" "kubectl"
+  printf "$fmt" "helm" "Kubernetes package manager"
+  printf "$fmt" "tmux" "terminal multiplexer"
+  printf "$fmt" "tree" "directory tree"
+  printf "$fmt" "rsync" "file sync"
+  printf "$fmt" "wget" "download"
+  printf "$fmt" "curl" "transfer"
+  printf "$fmt" "overmind" "Procfile runner"
+  printf "$fmt" "foreman" "Procfile runner"
+  printf "$fmt" "navi" "cheat sheet"
+  printf "$fmt" "starship" "prompt"
+  printf "$fmt" "neovim" "editor"
+  printf "$fmt" "mysql-client" "MySQL client"
+  printf "$fmt" "libpq" "PostgreSQL client"
+  printf "$fmt" "python@3.14" "Python"
+  printf "$fmt" "go" "Go"
+  printf "$fmt" "bun" "JS runtime"
+  printf "$fmt" "gh" "GitHub CLI"
+  printf "$fmt" "stripe" "Stripe CLI"
+  printf "$fmt" "vespa-cli" "Vespa search"
+  printf "$fmt" "valkey" "Redis-compatible"
+  printf "$fmt" "jid" "JSON drill"
+  printf "$fmt" "mc" "midnight commander"
+  printf "$fmt" "nginx" "web server"
+  printf "$fmt" "cloudflared" "Cloudflare tunnel"
+  printf "$fmt" "ngrok" "tunnel"
+  printf "$fmt" "mas" "Mac App Store CLI"
+  printf "$fmt" "lazysql" "SQL client"
+  printf "$fmt" "zsh-autocomplete" "zsh autocomplete"
+  printf "$fmt" "go-task" "task runner"
+  printf "$fmt" "glances" "system monitor"
+  printf "$fmt" "mactop" "macOS process monitor"
+  printf "$fmt" "zsh-autosuggestions" "zsh plugin"
+  printf "$fmt" "zsh-syntax-highlighting" "zsh plugin"
 
-KEY ALIASES: k/kubectl, m/minikube, gs/ga/gc/gp/git, d/docker, dud/dust, cur/cursor,
-  pg/psql, msql/mysql, homelab, redis-restart, mysql-restart, lf/rga-fzf, calc/numi-cli
-BINDINGS: ^n navi, ^X^E edit-line, ^Xc copy-buffer, ^[[A/B history-search
-ZSTYLE: fzf-tab git checkout/switch, completion matchers
+  echo ""
+  echo "  HOMEBREW OPTIONAL"
+  echo "$sep"
+  printf "$fmt" "Package" "Description"
+  echo "$sep"
+  printf "$fmt" "dive" "Docker image explorer"
+  printf "$fmt" "lazydocker" "Docker TUI"
+  printf "$fmt" "aws-vault" "AWS credential helper"
+  printf "$fmt" "atuin" "shell history"
+  printf "$fmt" "k9s" "Kubernetes TUI"
+  printf "$fmt" "kubectx" "kubectl context switch"
+  printf "$fmt" "stern" "kubectl logs"
+  printf "$fmt" "direnv" "directory env"
+  printf "$fmt" "bottom" "system monitor"
+  printf "$fmt" "procs" "process viewer"
+  printf "$fmt" "hyperfine" "benchmark"
+  printf "$fmt" "coreutils" "GNU coreutils"
 
-CONFIG FILES:
-  ~/.config/starship/starship.toml
-  ~/fzf-tab/fzf-tab.plugin.zsh
-  ~/Projects/navi-cheats/cheats
-  ~/.docker/completions
+  echo ""
+  echo "  HOMEBREW CASKS"
+  echo "$sep"
+  printf "$fmt" "Package" "Description"
+  echo "$sep"
+  printf "$fmt" "numi" "calculator (numi-cli)"
+  printf "$fmt" "redis-tui" "Redis TUI"
+  printf "$fmt" "font-jetbrains-mono-nerd-font" "nerd font"
 
-USAGE:
-  ./installation-script           # full install
-  ./installation-script --list    # inventory only
-  ./installation-script --sync-from-home  # copy ~/.zshrc, ~/.zprofile -> dotfiles/
-INV
+  echo ""
+  echo "  MISE (runtime manager)"
+  echo "$sep"
+  printf "$fmt" "Package" "Description"
+  echo "$sep"
+  printf "$fmt" "node" "Node.js"
+  printf "$fmt" "pnpm" "package manager"
+  printf "$fmt" "python" "Python"
+  printf "$fmt" "uv" "Python package manager"
+  printf "$fmt" "watchexec" "run on file change"
+
+  echo ""
+  echo "  CARGO"
+  echo "$sep"
+  printf "$fmt" "Package" "Description"
+  echo "$sep"
+  printf "$fmt" "rustup" "Rust toolchain"
+  printf "$fmt" "cargo" "Rust package manager"
+  printf "$fmt" "rustfmt" "Rust formatter"
+  printf "$fmt" "rust-analyzer" "Rust LSP"
+
+  echo ""
+  echo "  DOTNET TOOLS"
+  echo "$sep"
+  printf "$fmt" "Package" "Description"
+  echo "$sep"
+  printf "$fmt" "dotnet-ef" "Entity Framework"
+  printf "$fmt" "dotnet-counters" "performance"
+  printf "$fmt" "dotnet-dump" "dump analyzer"
+  printf "$fmt" "dotnet-trace" "tracing"
+
+  echo ""
+  echo "  CUSTOM PATHS"
+  echo "$sep"
+  printf "$fmt" "Path" "Description"
+  echo "$sep"
+  printf "$fmt" "~/Desktop/dev/guy/bin" "custom scripts"
+  printf "$fmt" "~/Desktop/dev/guy/homelab/scripts" "homelab scripts"
+
+  echo ""
+  echo "  DOTFILES"
+  echo "$sep"
+  printf "$fmt" "File" "Target"
+  echo "$sep"
+  printf "$fmt" "zshrc" "~/.zshrc"
+  printf "$fmt" "zprofile" "~/.zprofile"
+  printf "$fmt" "zshenv.template" "~/.zshenv"
+
+  echo ""
+  echo "  USAGE"
+  echo "$sep"
+  echo "  ./installation-script           # full install"
+  echo "  ./installation-script --list    # this inventory"
+  echo "  ./installation-script --sync-from-home"
+  echo ""
 }
 
 # --- Sync: copy current config into dotfiles/ (for updating repo after local edits)
