@@ -68,7 +68,8 @@ install_brew_formulae() {
     nginx \
     cloudflared ngrok \
     mas \
-    lazysql zsh-autocomplete go-task glances mactop
+    lazysql zsh-autocomplete go-task glances mactop \
+    llama.cpp
 }
 
 # Zsh plugins (required for .zshrc)
@@ -386,6 +387,7 @@ print_inventory() {
   printf "$fmt" "mactop" "macOS process monitor"
   printf "$fmt" "zsh-autosuggestions" "zsh plugin"
   printf "$fmt" "zsh-syntax-highlighting" "zsh plugin"
+  printf "$fmt" "llama.cpp" "run LLMs locally"
 
   echo ""
   echo "  HOMEBREW OPTIONAL"
