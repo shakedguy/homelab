@@ -2,26 +2,26 @@ name: postgres
 
 services:
   postgres:
-    image: pgvector/pgvector:pg18
+    image: pgvector/pgvector:pg18-trixie
     # image: shakedguy/pg-ai:latest
     container_name: postgres
     # build:
     #   context: ./builder
     #   dockerfile: Dockerfile
-    network_mode: host
+    # network_mode: host
     restart: unless-stopped
-    command: postgres -c listen_addresses='*'
+    # command: postgres -c listen_addresses='*'
     environment:
       POSTGRES_DB: postgres
-      POSTGRES_USER: guyshaked
+      POSTGRES_USER: postgres
       # POSTGRES_PASSWORD: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
     expose:
       - 5432
-    # ports:
-    #   - 5432:5432
+    ports:
+      - 5432:5432
     volumes:
-      - ../volumes/postgres/data:/home/postgres/pgdata/data
+      - ../volumes/postgresql:/var/lib/postgresql
       # - volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]

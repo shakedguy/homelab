@@ -1,154 +1,67 @@
+name: valkey-cluster
 
-name: redis-cluster
+# Single-container Valkey cluster (3 masters + 3 replicas) for local dev.
+# All 6 nodes share one network namespace and announce 127.0.0.1, so the
+# same address works for inter-node gossip AND for `MOVED` redirects from a
+# host client. Connect with:  valkey-cli -c -h 127.0.0.1 -p 7000
 
 services:
-  redis-node-0:
+  valkey-cluster:
     image: valkey/valkey:8-alpine
-    container_name: redis-node-0
-    command:
-      [
-        "redis-server",
-        "--cluster-enabled",
-        "yes",
-        "--appendonly",
-        "yes",
-        "--bind",
-        "0.0.0.0",
-        "--port",
-        "6000",
-        "--protected-mode",
-        "no",
-        "--cluster-config-file",
-        "nodes.conf",
-      ]
-    expose:
-      - 6000
+    container_name: valkey-cluster
+    restart: unless-stopped
+    ulimits:
+      memlock: -1
     volumes:
-      - ../volumes/redis-cluster/node-0:/data
-    network_mode: host
-  redis-node-1:
-    image: valkey/valkey:8-alpine
-    container_name: redis-node-1
+      - ../volumes/valkey-cluster:/data
+    ports:
+      - "7000-7005:7000-7005"     # client ports
+      - "17000-17005:17000-17005" # cluster bus ports
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -p 7000 cluster info | grep -q cluster_state:ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
     command:
-      [
-        "redis-server",
-        "--cluster-enabled",
-        "yes",
-        "--appendonly",
-        "yes",
-        "--port",
-        "6001",
-        "--protected-mode",
-        "no",
-        "--cluster-config-file",
-        "nodes.conf",
-      ]
-    expose:
-      - 6001
-    volumes:
-      - ../volumes/redis-cluster/node-1:/data
-    network_mode: host
+      - /bin/sh
+      - -eu
+      - -c
+      - |
+        NODES="7000 7001 7002 7003 7004 7005"
 
+        for port in $$NODES; do
+          mkdir -p /data/$$port
+          valkey-server \
+            --dir /data/$$port \
+            --port $$port \
+            --cluster-enabled yes \
+            --cluster-config-file nodes.conf \
+            --cluster-node-timeout 5000 \
+            --cluster-announce-ip 127.0.0.1 \
+            --cluster-announce-port $$port \
+            --cluster-announce-bus-port 1$${port} \
+            --appendonly yes \
+            --bind 0.0.0.0 \
+            --protected-mode no \
+            --daemonize yes \
+            --pidfile /data/$$port/valkey.pid \
+            --logfile /data/$$port/valkey.log
+        done
 
-  redis-node-2:
-    image: valkey/valkey:8-alpine
-    container_name: redis-node-2
-    command:
-      [
-        "redis-server",
-        "--cluster-enabled",
-        "yes",
-        "--appendonly",
-        "yes",
-        "--bind",
-        "0.0.0.0",
-        "--port",
-        "6002",
-        "--protected-mode",
-        "no",
-        "--cluster-config-file",
-        "nodes.conf",
-      ]
-    expose:
-      - 6002
-    network_mode: host
-    volumes:
-      - ../volumes/redis-cluster/node-2:/data
+        for port in $$NODES; do
+          until valkey-cli -p $$port ping >/dev/null 2>&1; do sleep 0.2; done
+        done
 
+        known=$$(valkey-cli -p 7000 cluster info | tr -d '\r' | awk -F: '/cluster_known_nodes:/{print $$2}')
+        if [ "$${known:-1}" -lt 6 ]; then
+          echo "Forming cluster (3 masters + 3 replicas)..."
+          valkey-cli --cluster create \
+            127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 \
+            127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+            --cluster-replicas 1 --cluster-yes
+        else
+          echo "Cluster already initialized ($$known known nodes), skipping create."
+        fi
 
-  redis-node-3:
-    image: valkey/valkey:8-alpine
-    container_name: redis-node-3
-    command:
-      [
-        "redis-server",
-        "--cluster-enabled",
-        "yes",
-        "--appendonly",
-        "yes",
-        "--bind",
-        "0.0.0.0",
-        "--port",
-        "6003",
-        "--protected-mode",
-        "no",
-        "--cluster-config-file",
-        "nodes.conf",
-      ]
-    expose:
-      - 6003
-    volumes:
-      - ../volumes/redis-cluster/node-3:/data
-    network_mode: host
-
-  redis-node-4:
-    image: valkey/valkey:8-alpine
-    container_name: redis-node-4
-    command:
-      [
-        "redis-server",
-        "--cluster-enabled",
-        "yes",
-        "--appendonly",
-        "yes",
-        "--bind",
-        "0.0.0.0",
-        "--port",
-        "6004",
-        "--protected-mode",
-        "no",
-        "--cluster-config-file",
-        "nodes.conf",
-      ]
-    expose:
-      - 6004
-    volumes:
-      - ../volumes/redis-cluster/node-4:/data
-    network_mode: host
-
-  redis-node-5:
-    image: valkey/valkey:8-alpine
-    container_name: redis-node-5
-    command:
-      [
-        "redis-server",
-        "--cluster-enabled",
-        "yes",
-        "--appendonly",
-        "yes",
-        "--bind",
-        "0.0.0.0",
-        "--port",
-        "6005",
-        "--protected-mode",
-        "no",
-        "--cluster-config-file",
-        "nodes.conf",
-      ]
-    expose:
-      - 6005
-    volumes:
-      - ../volumes/redis-cluster/node-5:/data
-    network_mode: host
-
-
+        echo "Valkey cluster ready on 127.0.0.1:7000-7005"
+        exec tail -f /data/7000/valkey.log

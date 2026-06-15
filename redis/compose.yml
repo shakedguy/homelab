@@ -110,8 +110,7 @@ services:
   #     - 5540:5540
   #   volumes:
   #     - ../volumes/redisinsight:/data
-    # networks:
-    #   redis-cluster:
-    #     aliases:
-    #       - redisinsight
-
+  # networks:
+  #   redis-cluster:
+  #     aliases:
+  #       - redisinsight
