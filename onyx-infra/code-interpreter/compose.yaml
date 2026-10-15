@@ -1,0 +1,16 @@
+name: code-interpreter
+
+services:
+  code-interpreter:
+    image: onyxdotapp/code-interpreter:latest
+    container_name: code-interpreter
+    command: ["bash", "./entrypoint.sh", "code-interpreter-api"]
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+
+    # Below is needed for the `docker-out-of-docker` execution mode
+    # For Linux rootless Docker, set DOCKER_SOCK_PATH=${XDG_RUNTIME_DIR}/docker.sock
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

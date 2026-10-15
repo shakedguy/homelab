@@ -2,7 +2,7 @@ name: postgres
 
 services:
   postgres:
-    image: pgvector/pgvector:pg18-trixie
+    image: paradedb/paradedb:pg18
     # image: shakedguy/pg-ai:latest
     container_name: postgres
     # build:

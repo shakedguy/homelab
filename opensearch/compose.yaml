@@ -1,0 +1,60 @@
+name: opensearch
+
+services:
+  opensearch:
+    container_name: opensearch
+    image: opensearchproject/opensearch:3.6.0
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    networks:
+      - opensearch-net
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD:-StrongPassword123!}
+      - bootstrap.memory_lock=true # Disable JVM heap memory swapping.
+      - "OPENSEARCH_JAVA_OPTS=-Xms2g -Xmx2g"
+    volumes:
+      - ../volumes/opensearch:/usr/share/opensearch/data
+    # These come from the example in https://docs.opensearch.org/latest/install-and-configure/install-opensearch/docker/
+    ulimits:
+      # Similarly to bootstrap.memory_lock, we don't want to impose limits on
+      # how much memory a process can lock from being swapped.
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit).
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536.
+        hard: 65536
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "6"
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - "5601:5601"
+    # Entrypoint maps FOO_BAR → --foo.bar; explore.enabled is not in that allowlist.
+    command: ["opensearch-dashboards", "--explore.enabled=true"]
+    environment:
+      - OPENSEARCH_HOSTS=["https://opensearch:9200"]
+      # Demo cert — skip verification for local single-node
+      - OPENSEARCH_SSL_VERIFICATIONMODE=none
+      - OPENSEARCH_USERNAME=admin
+      - OPENSEARCH_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD:-StrongPassword123!}
+      # Enhanced Discover (Workspaces / Datasources / Explore)
+      - DATA_SOURCE_ENABLED=true
+      - WORKSPACE_ENABLED=true
+      # Modal is dismiss-only; it does not detect that the flags above are already on
+      - HOME_DISABLEEXPERIENCEMODAL=true
+      # - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    networks:
+      - opensearch-net
+
+networks:
+  opensearch-net:
+    driver: bridge

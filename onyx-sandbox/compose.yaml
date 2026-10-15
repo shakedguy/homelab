@@ -1,0 +1,77 @@
+name: onyx-sandbox
+
+services:
+  sandbox-proxy:
+      image: onyxdotapp/onyx-backend:latest
+      command: ["python", "-m", "onyx.sandbox_proxy.server"]
+      env_file:
+        - path: .env
+          required: false
+      environment:
+        - SANDBOX_BACKEND=docker
+        - POSTGRES_HOST=localhost
+        - REDIS_HOST=localhost
+        # Pinned to defeat env_file leaks. See api_server above.
+        - SANDBOX_DOCKER_SOCKET=/var/run/docker.sock
+        - SANDBOX_DOCKER_NETWORK=localhost
+        - SANDBOX_PROXY_LISTEN_PORT=8081
+        # Matches the healthcheck URL below.
+        - SANDBOX_PROXY_HEALTHZ_PORT=8082
+        # OnyxPatResolver reads this at boot to know which host to claim for PAT
+        # injection. Without it, /me requests pass through bare with the
+        # placeholder bearer and api_server 403s.
+        - ONYX_SERVER_URL=http://localhost:8080
+      user: root
+      volumes:
+        - ../volumes/onyx-sandbox:/var/lib/sandbox-proxy/ca
+        # RO: the proxy only inspects (events watcher + initial sync).
+        - /var/run/docker.sock:/var/run/docker.sock
+      network_mode: host
+      restart: unless-stopped
+      # >= _DRAIN_TIMEOUT_S (10s in server.py) plus margin so the SIGTERM drain
+      # can terminalize parked approvals (claim EXPIRED + wake BLPOP listeners,
+      # see gate._terminalize_after_unhandled_error) before docker tears the
+      # container down. Matches K8s terminationGracePeriodSeconds.
+      stop_grace_period: 20s
+      healthcheck:
+        test:
+          [
+            "CMD",
+            "python",
+            "-c",
+            "import urllib.request; urllib.request.urlopen('http://localhost:8082/healthz')",
+          ]
+        interval: 10s
+        timeout: 3s
+        retries: 3
+        # Matches server._LOOKUP_INITIAL_SYNC_TIMEOUT_S so a slow initial sync
+        # doesn't race the healthcheck: if sync wins, next probe flips healthy; if
+        # it loses, the process exits and docker restarts.
+        start_period: 60s
+      logging:
+        driver: json-file
+        options:
+          max-size: "50m"
+          max-file: "6"
+
+    # Declared solely so `docker compose pull` fetches the sandbox image. Without
+    # it the first sandbox pays the ~1 GB download inside its provisioning
+    # request, because api_server creates sandbox containers from this image
+    # directly rather than compose managing them.
+    #
+    # replicas: 0 means no container is ever created -- `up` skips it, so nothing
+    # idles and `up --wait` stays green. It is not a workload; it is an image
+    # reference that the normal pull/upgrade lifecycle can see.
+  sandbox-image-prepull:
+      # Must match api_server/background's SANDBOX_CONTAINER_IMAGE below, or this
+      # warms an image nobody runs while every sandbox still cold-pulls.
+      image: onyxdotapp/sandbox:latest
+      deploy:
+        replicas: 0
+      # Defence in depth. `replicas: 0` is honoured by Compose v2 (even when the
+      # service is named explicitly), but the legacy standalone docker-compose
+      # ignores `deploy` outside swarm, and install.sh accepts a standalone binary
+      # with no minimum version. Unoverridden, the image's own ENTRYPOINT starts
+      # `opencode serve` on 0.0.0.0:4096 with no password -- and stays running, so
+      # nothing looks wrong. Anything that does start here must be inert.
+      entrypoint: ["/bin/true"]
